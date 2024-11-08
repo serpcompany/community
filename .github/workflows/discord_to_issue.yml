@@ -1,0 +1,31 @@
+name: Discord to GitHub Issues
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *" # Checks every 15 minutes; adjust timing as needed.
+
+jobs:
+  discord_to_issue:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Create GitHub Issue for Discord Message
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Send a test message to Discord (optional, for debugging)
+        curl -s -X POST -H "Content-Type: application/json" \
+          -d '{"content": "Checking for new messages"}' \
+          $DISCORD_WEBHOOK
+
+        # Create GitHub Issue
+        curl -X POST -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: token $GITHUB_TOKEN" \
+          https://api.github.com/repos/serpcompany/community/issues \
+          -d '{
+            "title": "New message from Discord",
+            "body": "This is a placeholder for the message content",
+            "labels": ["discord"]
+          }'
